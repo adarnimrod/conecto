@@ -27,10 +27,6 @@ using Unity;
 namespace Conecto {
 
     public class App : Granite.Application {
-
-        public const string APP_NAME="conecto";
-        public const string GSETTINGS_SCHEMA_ID="com.github.hannesschulze.conecto";
-        public const string GSETTINGS_SCHEMA_PATH="/com/github/hannesschulze/conecto";
         public HashMap<string, Device> devices_map;
         public ContactsInterface contacts_interface;
         private SMSHistory sms_history_view;
@@ -42,7 +38,7 @@ namespace Conecto {
         }
 
         construct {
-            application_id = App.GSETTINGS_SCHEMA_ID;
+            application_id = Constants.ID;
             flags = ApplicationFlags.FLAGS_NONE;
             program_name = Constants.PROGRAM_NAME;
             build_version = Constants.VERSION;
@@ -53,7 +49,7 @@ namespace Conecto {
             Contractor.clean_contractor_directory.begin ();
             MConnectThread mconnect_thread = new MConnectThread (this, devices_map);
 
-            launcher_entry = LauncherEntry.get_for_desktop_id (GSETTINGS_SCHEMA_ID + ".desktop");
+            launcher_entry = LauncherEntry.get_for_desktop_id (Constants.ID + ".desktop");
 
             sms_history_view = new SMSHistory (devices_map);
 

@@ -43,5 +43,6 @@ namespace Conecto.Configs {
             "Hannes Schulze <haschu0103@gmail.com>"
         };
         public abstract const Gtk.License ABOUT_LICENSE_TYPE = Gtk.License.GPL_2_0;
+        public abstract const string GSETTINGS_SCHEMA_PATH = "/com/github/hannesschulze/conecto";
     }
 }

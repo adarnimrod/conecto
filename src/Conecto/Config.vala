@@ -15,12 +15,14 @@
  * AUTHORS
  * gyan000 <gyan000 (at] ijaz.fr>
  */
+using Conecto.Configs;
+
 namespace Conecto {
 
     public class Config : Object {
 
         public static string get_config_dir () {
-            return Path.build_filename (Environment.get_user_config_dir (), App.APP_NAME);
+            return Path.build_filename (Environment.get_user_config_dir (), Constants.ID);
         }
 
         public static string create_if_not_exists_config_dir () {
