@@ -19,6 +19,7 @@
 using Conecto.Plugin;
 using Conecto.Plugin.Windows;
 using Conecto.Widgets;
+using Conecto.Configs;
 using Gee;
 using MConnect;
 using Unity;
@@ -32,37 +33,31 @@ namespace Conecto {
         public const string GSETTINGS_SCHEMA_PATH="/com/github/hannesschulze/conecto";
         public HashMap<string, Device> devices_map;
         public ContactsInterface contacts_interface;
-        private GLib.Settings main_settings;
         private SMSHistory sms_history_view;
         private MainWindow main_window;
         private LauncherEntry launcher_entry;
 
         public App () {
            devices_map = new HashMap<string, Device> ();
-           main_settings = new GLib.Settings (GSETTINGS_SCHEMA_ID);
         }
 
         construct {
             application_id = App.GSETTINGS_SCHEMA_ID;
             flags = ApplicationFlags.FLAGS_NONE;
-            program_name = "Conecto";
-            build_version = "0.1";
+            program_name = Constants.PROGRAM_NAME;
+            build_version = Constants.VERSION;
         }
 
         public override void activate ()
         {
             Contractor.clean_contractor_directory.begin ();
-            MConnectThread mconnect_thread = new MConnectThread (this, devices_map, main_settings);
+            MConnectThread mconnect_thread = new MConnectThread (this, devices_map);
 
             launcher_entry = LauncherEntry.get_for_desktop_id (GSETTINGS_SCHEMA_ID + ".desktop");
 
-            sms_history_view = new SMSHistory (main_settings, devices_map);
-            // sms_history_view.delete_event.connect ((event) => {
-            //     // sms_history_view.iconify ();
-            //     return true;
-            // });
+            sms_history_view = new SMSHistory (devices_map);
 
-            main_window = new MainWindow (this, main_settings, sms_history_view);
+            main_window = new MainWindow (this, sms_history_view);
             main_window.show_all ();
             main_window.delete_event.connect ((event) => {
                 // When from launcher menu is clicked.
@@ -119,7 +114,7 @@ namespace Conecto {
         }
 
         private async void init_sms_store () {
-            SMSStore.instance (main_settings);
+            SMSStore.instance ();
         }
 
         private async void init_sms_history_tab () {
