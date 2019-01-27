@@ -26,30 +26,25 @@ using Unity;
 
 namespace Conecto {
 
-    public class App : Granite.Application {
+    public class Application : Granite.Application {
         public HashMap<string, Device> devices_map;
         public ContactsInterface contacts_interface;
         private SMSHistory sms_history_view;
         private MainWindow main_window;
-        private LauncherEntry launcher_entry;
 
-        public App () {
-           devices_map = new HashMap<string, Device> ();
-        }
-
-        construct {
+        public Application () {
             application_id = Constants.ID;
             flags = ApplicationFlags.FLAGS_NONE;
             program_name = Constants.PROGRAM_NAME;
             build_version = Constants.VERSION;
+
+            devices_map = new HashMap<string, Device> ();
         }
 
         public override void activate ()
         {
             Contractor.clean_contractor_directory.begin ();
             MConnectThread mconnect_thread = new MConnectThread (this, devices_map);
-
-            launcher_entry = LauncherEntry.get_for_desktop_id (Constants.ID + ".desktop");
 
             sms_history_view = new SMSHistory (devices_map);
 
@@ -74,13 +69,11 @@ namespace Conecto {
 
 
             mconnect_thread.devices_updated.connect (() => {
-                update_launcher_entry.begin  ();
                 main_window.update_ui (devices_map);
                 sms_history_view.update_available_device_combobox ();
             });
 
             mconnect_thread.devices_status_updated.connect (() => {
-                update_launcher_entry.begin ();
                 sms_history_view.update_available_device_combobox ();
             });
 
@@ -91,23 +84,7 @@ namespace Conecto {
             new Thread<int> ("MConnect Thread", mconnect_thread.run);
         }
 
-        public static int main (string[] args) {
 
-            // Needed for mousepad protocol handler.
-            Gdk.init (ref args);
-
-            // Needed for clipboard sharing.
-            Gtk.init (ref args);
-
-            if (!Thread.supported ()) {
-                error ("Cannot run without thread support.\n");
-            }
-
-             message ("Report any issues/bugs you might find to https://github.com/hannesschulze/conecto/issues");
-
-            var application = new App ();
-            return application.run (args);
-        }
 
         private async void init_sms_store () {
             SMSStore.instance ();
@@ -143,51 +120,6 @@ namespace Conecto {
             });
 
             sms_history_view.contacts_interface = contacts_interface;
-        }
-
-        private async void update_launcher_entry () {
-
-            if (launcher_entry.quicklist == null) {
-                launcher_entry.quicklist =  new Dbusmenu.Menuitem ();
-            }
-
-            foreach (var device_entry in devices_map.entries) {
-                bool to_add = true;
-                bool to_remove = false;
-
-                if (device_entry.value.is_paired == false || device_entry.value.is_active == false) {
-                    to_remove = true;
-                }
-
-
-                foreach (var device_menuitem in launcher_entry.quicklist.get_children ()) {
-
-                    if (((DeviceMenuitem)device_menuitem).id == device_entry.value.device_num) {
-                        ((DeviceMenuitem)device_menuitem).update_ui ();
-                        to_add = false;
-
-                        if (to_remove == true) {
-                            launcher_entry.quicklist.child_delete (device_menuitem);
-                            Contractor.destroy_contract (device_entry.value);
-                        }
-                    }
-                }
-
-                if (to_add == true && to_remove == false) {
-                    launcher_entry.quicklist.child_append (
-                        new DeviceMenuitem.with_device (device_entry.value, main_window));
-                }
-
-                // var device_menuitem = launcher_entry.quicklist.find_id (device_entry.value.device_num);
-                // @TOCHECK This condition is not working as expected:
-                // if (device_menuitem is Dbusmenu.Menuitem) {
-                //     print ("\n[UPDATE DEVICE]================> %i - %s\n", device_entry.value.device_num, device_entry.value.custom_name);
-                //      ((DeviceMenuitem)device_menuitem).update_ui ();
-                // } else {
-                //     print ("\n[ADD DEVICE]================> %i - %s\n", device_entry.value.device_num, device_entry.value.custom_name);
-                //     launcher_entry.quicklist.child_append (new DeviceMenuitem.with_device (device_entry.value));
-                // }
-            }
         }
     }
 }
