@@ -43,15 +43,26 @@ sudo apt install elementary-sdk libunity-dev libnotify-dev libghc-gnutls-dev lib
 ### Building
 ```
 git clone https://github.com/hannesschulze/conecto.git && cd conecto
-meson build --prefix=/usr
-cd build
-ninja
+meson build
+ninja -C build
+glib-compile-schemas ./data/
 ```
 
 To install, use `ninja install`, then execute with com.github.hannesschulze.conecto:
 ```shell
-sudo ninja install
+sudo ninja -C build install
 com.github.hannesschulze.conecto
+```
+
+### Building using Docker
+```
+docker build -t conecto .
+docker run --rm -v "$PWD:/conecto" conecto
+```
+
+### Run from build
+```
+GSETTINGS_SCHEMA_DIR=data build/com.github.gyan000.eos-connect
 ```
 
 ## About this project
